@@ -4,6 +4,9 @@
 # Ignore final output
 final_output.mp4
 
+# Ignore pow
+pow.pptx
+
 # Ignore everything inside the background_videos folder
 background_videos/
 

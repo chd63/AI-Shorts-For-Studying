@@ -1,10 +1,12 @@
 import google.generativeai as genai
 from dotenv import load_dotenv
+from pptx import Presentation
 import video_script_runner
 import sys
 import json
 import re
 import os
+import argparse
 
 load_dotenv()
 api_key_1 = os.getenv("API_KEY")
@@ -29,6 +31,22 @@ def read_notes_file(file_path):
         print(f"Error: File '{file_path}' not found.")
         sys.exit(1)  # Exit the program if the file is missing
 
+# extract text from powerpoint
+def extract_text_from_pptx(file_path):
+    try:
+        prs = Presentation(file_path)
+        content = []
+        for slide in prs.slides:
+            slide_text = []
+            for shape in slide.shapes:
+                if hasattr(shape, "text"):
+                    slide_text.append(shape.text)
+            content.append("\n".join(slide_text))
+        return "\n\n".join(content)
+    except Exception as e:
+        print(f"Error processing PowerPoint file: {e}")
+        sys.exit(1)
+
 def get_integer_input(arg_value):
     """
     Validates and converts a command-line argument to an integer.
@@ -42,20 +60,21 @@ def get_integer_input(arg_value):
         print(f"❌ Error: '{arg_value}' is not a valid number.")
         sys.exit(1)  # Exit if the user input is not a number
 
-# Check if enough arguments were provided
-if len(sys.argv) < 3:
-    print("❌ Error: Please provide a notes file and a number.")
-    print("Usage: python3 main.py <notes_file> <words_per_screen>")
-    sys.exit(1)
+parser = argparse.ArgumentParser(description="Process notes from a text file or PowerPoint and generate videos.")
+parser.add_argument("notes_file", help="Path to the notes file (TXT or PPTX)")
+parser.add_argument("words_per_screen", type=int, help="Number of key ideas to extract")
+parser.add_argument("-p", "--powerpoint", action="store_true", help="Use PowerPoint file instead of a text file")
 
-# Read parameters from command-line
-notes_file = sys.argv[1]       # First argument: notes file path
-words_per_screen = get_integer_input(sys.argv[2])  # Second argument: number input
-notes_text = read_notes_file(notes_file)
+args = parser.parse_args()
+
+if args.powerpoint:
+    notes_text = extract_text_from_pptx(args.notes_file)
+else:
+    notes_text = read_notes_file(args.notes_file)
 
 request_string = f"""
-Please extract {words_per_screen} key ideas from the following text. 
-Each idea should be concise, under 100 words. 
+Please extract {args.words_per_screen} key ideas from the following text. 
+Each idea should be concise, less then 100 words. 
 Format the output as a **valid Python list of strings**.
 
 Return only the JSON output without any additional text.
@@ -127,7 +146,7 @@ for idx, key_point in enumerate(extracted_list, start=1):
 
     # Call the video creation function with each key point
     video_script_runner.run_video_script(
-        script_to_use, video_path, key_point, output_path, font_path, video_font_size, words_per_screen
+        script_to_use, video_path, key_point, output_path, font_path, video_font_size, args.words_per_screen
     )
     print(f"✅ Video {output_path} created successfully.")
 

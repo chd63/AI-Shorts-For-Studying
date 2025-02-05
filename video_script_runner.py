@@ -59,6 +59,4 @@ if __name__ == "__main__":
     #option to change number of words on screen at a time
     words_per_screen = 3
 
-    #TODO: get api calls to create videos for studying
-
     run_video_script(script_to_use, video_path, text, output_path, font_path, video_font_size, words_per_screen)
