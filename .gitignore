@@ -1,0 +1,18 @@
+# Ignore .env file
+.env
+
+# Ignore final output
+final_output.mp4
+
+# Ignore everything inside the background_videos folder
+background_videos/
+
+# Ignore everything inside the generated_videos folder
+generated_videos/
+
+# Ignore everything inside the notes folder
+notes/
+
+# Optional: Ignore system files
+.DS_Store  # macOS
+Thumbs.db  # Windows
