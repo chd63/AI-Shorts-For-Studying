@@ -166,7 +166,7 @@ class TextPage:
         text = self.text_input.get("1.0", tk.END).strip()
         video_path = get_random_video() if self.video_var.get() == "Random" else os.path.join(BACKGROUND_VIDEOS_DIR, self.video_var.get())
 
-        run_video_script("google_script", video_path, text, "final_output.mp4", "/home/dev/.fonts/DejaVuSans.ttf", int(self.font_size_entry.get()), int(self.words_per_screen_entry.get()))
+        run_video_script("script", video_path, text, "final_output.mp4", "/home/dev/.fonts/DejaVuSans.ttf", int(self.font_size_entry.get()), int(self.words_per_screen_entry.get()))
 
     def go_back(self):
         self.main_app.clear_window()
