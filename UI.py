@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, Text, StringVar, OptionMenu
 import os
 import random
-from note_generation import generate_video, read_notes_file, extract_text_from_pptx
+from note_generation import generate_video, read_notes_file, extract_text_from_pptx, extract_text_from_pdf  # Import updated PDF extraction
 from video_script_runner import run_video_script
 
 BACKGROUND_VIDEOS_DIR = "./background_videos/"
@@ -50,22 +50,13 @@ class NotesPage:
         self.root = root
         self.main_app = main_app
         self.root.title("Generate Video from Notes")
-        self.root.geometry("800x400") 
+        self.root.geometry("800x400")
 
         # File Selection
         tk.Label(root, text="Upload Notes File:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
         self.file_entry = tk.Entry(root, width=50)
         self.file_entry.grid(row=0, column=1, padx=10, pady=5)
         tk.Button(root, text="Browse", command=self.browse_file).grid(row=0, column=2, padx=10, pady=5)
-
-        # Background Video Selection
-        tk.Label(root, text="Choose Background Video:").grid(row=1, column=0, padx=10, pady=5, sticky="w")
-        self.video_var = StringVar(root)
-        self.video_var.set("Random")
-
-        video_files = ["Random"] + [f for f in os.listdir(BACKGROUND_VIDEOS_DIR) if f.endswith((".mp4", ".mov", ".avi", ".mkv"))]
-        self.video_dropdown = OptionMenu(root, self.video_var, *video_files)
-        self.video_dropdown.grid(row=1, column=1, padx=10, pady=5)
 
         # Key Points Input
         tk.Label(root, text="Key Points (Videos to Generate):").grid(row=2, column=0, padx=10, pady=5, sticky="w")
@@ -91,29 +82,56 @@ class NotesPage:
         tk.Button(root, text="Back to Main Menu", command=self.go_back, fg="blue").grid(row=6, column=0, columnspan=3, pady=10)
 
     def browse_file(self):
-        file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("PowerPoint Files", "*.pptx")])
+        file_path = filedialog.askopenfilename(filetypes=[("Text Files", "*.txt"), ("PowerPoint Files", "*.pptx"), ("PDF Files", "*.pdf")])
         if file_path:
             self.file_entry.delete(0, tk.END)
             self.file_entry.insert(0, file_path)
 
     def generate_videos(self):
         notes_file = self.file_entry.get()
-        key_point = self.key_point_entry.get()
-        words_per_screen = self.words_per_screen_entry.get()
-        font_size = self.font_size_entry.get()
-        selected_video = self.video_var.get()
+        key_point = self.key_point_entry.get()  # This is a string from the entry field, no issue here.
+        words_per_screen = self.words_per_screen_entry.get()  # This is also a string.
+        font_size = self.font_size_entry.get()  # String.
 
-        if selected_video == "Random":
-            video_path = get_random_video()
+        # Convert necessary fields to integers
+        try:
+            key_point = int(key_point)  # Convert key_point to an integer
+        except ValueError:
+            messagebox.showerror("Error", "Key Points must be an integer.")
+            return
+
+        try:
+            words_per_screen = int(words_per_screen)  # Convert words_per_screen to an integer
+        except ValueError:
+            messagebox.showerror("Error", "Words Per Screen must be an integer.")
+            return
+
+        try:
+            font_size = int(font_size)  # Convert font_size to an integer
+        except ValueError:
+            messagebox.showerror("Error", "Font Size must be an integer.")
+            return
+
+        # Determine the text extraction method based on file type
+        if notes_file.endswith(".txt"):
+            notes_text = read_notes_file(notes_file)
+        elif notes_file.endswith(".pptx"):
+            notes_text = extract_text_from_pptx(notes_file)
+        elif notes_file.endswith(".pdf"):
+            notes_text = extract_text_from_pdf(notes_file)  # PDF handling
         else:
-            video_path = os.path.join(BACKGROUND_VIDEOS_DIR, selected_video)
+            messagebox.showerror("Error", "Unsupported file type")
+            return
+
+        # Select a random background video
+        video_path = get_random_video()
 
         script_to_use = "script"
         font_path = "/home/dev/.fonts/DejaVuSans.ttf"
         output_dir = "./generated_videos/"
 
         try:
-            generate_video(notes_file, words_per_screen, key_point, script_to_use, video_path, int(font_size), font_path, output_dir)
+            generate_video(notes_text, words_per_screen, key_point, script_to_use, font_size, font_path, output_dir)
             messagebox.showinfo("Success", "Videos have been successfully generated!")
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred: {e}")
@@ -121,6 +139,7 @@ class NotesPage:
     def go_back(self):
         self.main_app.clear_window()
         VideoGeneratorApp(self.root)
+
 
 
 class TextPage:
@@ -171,7 +190,6 @@ class TextPage:
     def go_back(self):
         self.main_app.clear_window()
         VideoGeneratorApp(self.root)
-
 
 
 # Run the application
