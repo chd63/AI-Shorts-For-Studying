@@ -10,6 +10,12 @@ pow.pptx
 # ignore the test pdf file
 pdfs.pdf
 
+# ignore key
+service-account.json
+
+# ignore the yt upload key
+client_secrets.json
+
 # Ignore everything inside the background_videos folder
 background_videos/
 

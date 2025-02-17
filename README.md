@@ -1,5 +1,11 @@
 # AI Video Generator - Usage Guide
 
+## Download dependencies 
+To download all the python dependencies please run the following command:
+```bash
+pip install -r requirements.txt
+```
+
 ## Running the Application
 
 You can run the AI Video Generator in two different ways:
