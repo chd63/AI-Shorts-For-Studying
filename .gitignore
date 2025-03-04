@@ -15,6 +15,7 @@ service-account.json
 
 # ignore the yt upload key
 client_secrets.json
+client_secret.json
 
 # Ignore everything inside the background_videos folder
 background_videos/
@@ -28,3 +29,7 @@ notes/
 # Optional: Ignore system files
 .DS_Store  # macOS
 Thumbs.db  # Windows
+
+test.json
+
+token.json
